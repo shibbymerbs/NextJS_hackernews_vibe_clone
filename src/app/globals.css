@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --hn-orange: #ff6600;
+    --hn-gray: #f6f6ef;
+    --hn-dark-gray: #828282;
+  }
+}
+
+@layer components {
+  .hn-link {
+    @apply text-hn-orange hover:text-hn-orange/80 transition-colors;
+  }
+
+  .hn-button {
+    @apply bg-hn-orange text-white px-3 py-1 rounded-sm text-sm hover:bg-hn-orange/80 transition-colors;
+  }
+
+  .story-item {
+    @apply border-b border-gray-200 py-2;
+  }
+}
