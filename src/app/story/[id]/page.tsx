@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getStoryById } from '@/lib/stories'
-
+import CommentForm from '@/components/CommentForm'
 export default async function StoryPage({ params }: { params: { id: string } }) {
   // Fetch story from database
   const story = await getStoryById(params.id)
@@ -77,6 +77,11 @@ export default async function StoryPage({ params }: { params: { id: string } }) 
           ) : (
             <p className="text-hn-dark-gray">No comments yet.</p>
           )}
+        </section>
+
+        <section className="mt-8 pt-4 border-t border-hn-light-gray">
+          <h2 className="text-lg font-semibold text-hn-darkest-gray mb-4">Add a Comment</h2>
+          <CommentForm storyId={story.id} />
         </section>
 
         <div className="mt-8">

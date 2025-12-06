@@ -5,10 +5,10 @@ interface Story {
   id: string
   title: string
   points: number
-  userId: string
+  userId: string | null
   user: {
-    name: string
-  }
+    name: string | null
+  } | null
   _count: {
     comments: number
   }

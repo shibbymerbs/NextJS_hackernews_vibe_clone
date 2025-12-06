@@ -47,3 +47,56 @@ export async function getAllStories() {
     return []
   }
 }
+
+export async function createComment(storyId: string, userId: string | null, text: string, parentId: string | null = null) {
+  try {
+    const comment = await prisma.comment.create({
+      data: {
+        storyId,
+        userId,
+        text,
+        parentId
+      },
+      include: {
+        user: true
+      }
+    })
+
+    return comment
+  } catch (error) {
+    console.error('Error creating comment:', error)
+    return null
+  }
+}
+
+export async function getCommentsByStoryId(storyId: string) {
+  try {
+    const comments = await prisma.comment.findMany({
+      where: {
+        storyId,
+        parentId: null // Only top-level comments
+      },
+      include: {
+        user: true,
+        children: {
+          include: {
+            user: true,
+            children: {
+              include: {
+                user: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    })
+
+    return comments
+  } catch (error) {
+    console.error('Error fetching comments:', error)
+    return []
+  }
+}
