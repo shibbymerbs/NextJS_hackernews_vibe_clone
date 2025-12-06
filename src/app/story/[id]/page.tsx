@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getStoryById } from '@/lib/stories'
 import CommentForm from '@/components/CommentForm'
+import VoteButtons from '@/components/VoteButtons'
 export default async function StoryPage({ params }: { params: { id: string } }) {
   // Fetch story from database
   const story = await getStoryById(params.id)
@@ -52,7 +53,11 @@ export default async function StoryPage({ params }: { params: { id: string } }) 
         <header className="mb-6">
           <h1 className="text-2xl font-bold text-hn-darkest-gray mb-2">{story.title}</h1>
           <div className="flex items-center space-x-4 text-sm text-hn-dark-gray mb-4">
-            <span>{story.points} points</span>
+            <VoteButtons
+              storyId={story.id}
+              initialPoints={story.points}
+              userId={null} // For now, we'll use null userId
+            />
             <span>by <Link href={`/user/${story.userId}`} className="hn-link font-medium">{story.user?.name || 'anonymous'}</Link></span>
             <span>{timeAgo(new Date(story.createdAt))}</span>
             <span>{story.comments.length} comments</span>

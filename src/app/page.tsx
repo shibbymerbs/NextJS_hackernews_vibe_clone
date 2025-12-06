@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getAllStories } from '@/lib/stories'
+import VoteButtons from '@/components/VoteButtons'
 
 interface Story {
   id: string
@@ -40,9 +41,16 @@ export default async function Home() {
                 <h2 className="text-base font-medium">
                   <Link href={`/story/${story.id}`} className="hn-link">{story.title}</Link>
                 </h2>
-                <p className="text-sm text-hn-dark-gray">
-                  {story.points} points by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count.comments} comments</Link>
-                </p>
+                <div className="flex items-center space-x-4">
+                  <VoteButtons
+                    storyId={story.id}
+                    initialPoints={story.points}
+                    userId={null} // For now, we'll use null userId
+                  />
+                  <p className="text-sm text-hn-dark-gray">
+                    by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count.comments} comments</Link>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
