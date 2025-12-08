@@ -53,16 +53,21 @@ model Comment {
   points      Int       @default(0)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  votes      Vote[]
 }
 
 model Vote {
   id        String   @id @default(cuid())
   userId    String
   user      User     @relation(fields: [userId], references: [id])
-  storyId   String
-  story     Story    @relation(fields: [storyId], references: [id])
+  storyId   String?
+  story     Story?   @relation(fields: [storyId], references: [id])
+  commentId String?
+  comment   Comment? @relation(fields: [commentId], references: [id])
   type      String   // 'upvote' or 'downvote'
   createdAt DateTime @default(now())
 
-  @@unique([userId, storyId]) // Prevent duplicate votes
+  @@unique([userId, storyId]) // Prevent duplicate story votes
+  @@unique([userId, commentId]) // Prevent duplicate comment votes
 }

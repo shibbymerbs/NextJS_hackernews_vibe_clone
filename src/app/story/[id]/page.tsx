@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getStoryById } from '@/lib/stories'
 import CommentForm from '@/components/CommentForm'
 import VoteButtons from '@/components/VoteButtons'
+import CommentVoteButtons from '@/components/CommentVoteButtons'
 export default async function StoryPage({ params }: { params: { id: string } }) {
   // Fetch story from database
   const story = await getStoryById(params.id)
@@ -38,6 +39,11 @@ export default async function StoryPage({ params }: { params: { id: string } }) 
             <div className="flex items-center space-x-2 mb-1">
               <span className="text-sm font-medium text-hn-dark-gray">{comment.user?.name || 'anonymous'}</span>
               <span className="text-sm text-hn-light-gray">{timeAgo(new Date(comment.createdAt))}</span>
+              <CommentVoteButtons
+                commentId={comment.id}
+                initialPoints={comment.points}
+                userId={null}
+              />
             </div>
             <p className="text-base text-hn-darkest-gray whitespace-pre-wrap">{comment.text}</p>
             {comment.children && comment.children.length > 0 && renderComments(comment.children, depth + 1)}
