@@ -5,8 +5,10 @@ import {
   getUserVote,
   upvoteComment,
   downvoteComment,
-  getUserCommentVote
+  getUserCommentVote,
+  getStoriesByFreshness
 } from '@/lib/stories'
+import { sortStoriesByFreshness, sortCommentsByFreshness } from '@/lib/freshness'
 
 export async function POST(request: Request) {
   try {
@@ -50,6 +52,15 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
+    const sortType = searchParams.get('sort')
+
+    // Handle freshness sorting requests
+    if (sortType === 'freshness') {
+      const stories = await getStoriesByFreshness()
+      return NextResponse.json(stories)
+    }
+
+    // Handle vote lookup requests
     const storyId = searchParams.get('storyId')
     const commentId = searchParams.get('commentId')
     const userId = searchParams.get('userId')
@@ -70,7 +81,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Either storyId or commentId must be provided' }, { status: 400 })
     }
   } catch (error) {
-    console.error('Error fetching user vote:', error)
+    console.error('Error handling vote request:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

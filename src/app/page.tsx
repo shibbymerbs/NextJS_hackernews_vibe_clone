@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { getAllStories } from '@/lib/stories'
+import { sortStoriesByFreshness } from '@/lib/freshness'
 import VoteButtons from '@/components/VoteButtons'
 
 interface Story {
@@ -10,13 +11,18 @@ interface Story {
   user: {
     name: string | null
   } | null
-  _count: {
+  _count?: {
     comments: number
   }
+  createdAt: Date | string
+  votes?: Array<{
+    createdAt: Date | string
+  }>
 }
 
 export default async function Home() {
   const stories: Story[] = await getAllStories()
+  const sortedStories = sortStoriesByFreshness(stories)
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -33,7 +39,7 @@ export default async function Home() {
       </header>
 
       <div className="space-y-4">
-        {stories.map((story, index) => (
+        {sortedStories.map((story, index) => (
           <div key={story.id} className="story-item">
             <div className="flex items-start space-x-2">
               <span className="text-hn-dark-gray text-sm">{index + 1}.</span>
@@ -48,7 +54,7 @@ export default async function Home() {
                     userId={null} // For now, we'll use null userId
                   />
                   <p className="text-sm text-hn-dark-gray">
-                    by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count.comments} comments</Link>
+                    by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count?.comments || 0} comments</Link>
                   </p>
                 </div>
               </div>

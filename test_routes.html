@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freshness Routes Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+        .info { background-color: #d1ecf1; }
+    </style>
+</head>
+<body>
+    <h1>Freshness Routes Test</h1>
+
+    <div id="test1" class="test info">
+        <h3>1. Testing /api/stories with freshness sorting</h3>
+        <p>Status: Running...</p>
+    </div>
+
+    <div id="test2" class="test info">
+        <h3>2. Testing /api/votes with freshness sorting</h3>
+        <p>Status: Running...</p>
+    </div>
+
+    <div id="test3" class="test info">
+        <h3>3. Testing /api/stories without freshness (default)</h3>
+        <p>Status: Running...</p>
+    </div>
+
+    <script>
+        async function runTests() {
+            // Test 1: Stories with freshness
+            try {
+                const response = await fetch('/api/stories?sort=freshness');
+                const data = await response.json();
+
+                const test1Div = document.getElementById('test1');
+                if (response.ok) {
+                    test1Div.className = 'test success';
+                    test1Div.innerHTML = `
+                        <h3>1. Testing /api/stories with freshness sorting</h3>
+                        <p>✅ Success: Returned ${data.length} stories</p>
+                        ${data.length > 0 && data[0].freshnessScore !== undefined ?
+                            '<p>✅ Freshness score is present</p>' :
+                            '<p>❌ Freshness score missing</p>'}
+                    `;
+                } else {
+                    test1Div.className = 'test error';
+                    test1Div.innerHTML = `
+                        <h3>1. Testing /api/stories with freshness sorting</h3>
+                        <p>❌ Error: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('test1').className = 'test error';
+                document.getElementById('test1').innerHTML = `
+                    <h3>1. Testing /api/stories with freshness sorting</h3>
+                    <p>❌ Exception: ${error.message}</p>
+                `;
+            }
+
+            // Test 2: Votes with freshness
+            try {
+                const response = await fetch('/api/votes?sort=freshness');
+                const data = await response.json();
+
+                const test2Div = document.getElementById('test2');
+                if (response.ok) {
+                    test2Div.className = 'test success';
+                    test2Div.innerHTML = `
+                        <h3>2. Testing /api/votes with freshness sorting</h3>
+                        <p>✅ Success: Returned ${data.length} stories</p>
+                        ${data.length > 0 && data[0].freshnessScore !== undefined ?
+                            '<p>✅ Freshness score is present</p>' :
+                            '<p>❌ Freshness score missing</p>'}
+                    `;
+                } else {
+                    test2Div.className = 'test error';
+                    test2Div.innerHTML = `
+                        <h3>2. Testing /api/votes with freshness sorting</h3>
+                        <p>❌ Error: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('test2').className = 'test error';
+                document.getElementById('test2').innerHTML = `
+                    <h3>2. Testing /api/votes with freshness sorting</h3>
+                    <p>❌ Exception: ${error.message}</p>
+                `;
+            }
+
+            // Test 3: Default stories
+            try {
+                const response = await fetch('/api/stories');
+                const data = await response.json();
+
+                const test3Div = document.getElementById('test3');
+                if (response.ok) {
+                    test3Div.className = 'test success';
+                    test3Div.innerHTML = `
+                        <h3>3. Testing /api/stories without freshness (default)</h3>
+                        <p>✅ Success: Returned ${data.length} stories</p>
+                    `;
+                } else {
+                    test3Div.className = 'test error';
+                    test3Div.innerHTML = `
+                        <h3>3. Testing /api/stories without freshness (default)</h3>
+                        <p>❌ Error: ${data.error || 'Unknown error'}</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('test3').className = 'test error';
+                document.getElementById('test3').innerHTML = `
+                    <h3>3. Testing /api/stories without freshness (default)</h3>
+                    <p>❌ Exception: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', runTests);
+    </script>
+</body>
+</html>
