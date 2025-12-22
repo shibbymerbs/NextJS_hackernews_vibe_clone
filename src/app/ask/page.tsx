@@ -37,18 +37,6 @@ export default function AskPage() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-hn-orange">
-          <Link href="/" className="hn-link">Hacker News</Link>
-        </h1>
-        <nav className="flex space-x-4">
-          <Link href="/new" className="hn-link">new</Link>
-          <Link href="/ask" className="hn-link">ask</Link>
-          <Link href="/show" className="hn-link">show</Link>
-          <Link href="/jobs" className="hn-link">jobs</Link>
-        </nav>
-      </header>
-
       <div className="bg-white p-6 rounded-sm shadow-sm">
         <h2 className="text-xl font-semibold mb-4 text-hn-dark-gray">Ask HN</h2>
         <p className="text-hn-dark-gray mb-6">Submit a question to ask the Hacker News community.</p>
