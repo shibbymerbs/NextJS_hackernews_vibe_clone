@@ -23,6 +23,7 @@ model User {
   stories   Story[]
   comments  Comment[]
   votes     Vote[]
+  showHns   ShowHN[]
 }
 
 model Story {
@@ -46,6 +47,8 @@ model Comment {
   user        User?     @relation(fields: [userId], references: [id])
   storyId     String
   story       Story     @relation(fields: [storyId], references: [id])
+  showHnId    String?
+  showHn      ShowHN?   @relation(fields: [showHnId], references: [id])
   parentId    String?
   parent      Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
   children    Comment[] @relation("CommentToComment")
@@ -65,9 +68,27 @@ model Vote {
   story     Story?   @relation(fields: [storyId], references: [id])
   commentId String?
   comment   Comment? @relation(fields: [commentId], references: [id])
+  showHnId  String?
+  showHn    ShowHN?  @relation(fields: [showHnId], references: [id])
   type      String   // 'upvote' or 'downvote'
   createdAt DateTime @default(now())
 
   @@unique([userId, storyId]) // Prevent duplicate story votes
   @@unique([userId, commentId]) // Prevent duplicate comment votes
+  @@unique([userId, showHnId]) // Prevent duplicate showhn votes
+}
+
+model ShowHN {
+  id          String    @id @default(cuid())
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id])
+  title       String
+  url         String?
+  text        String?
+  points      Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  comments   Comment[]
+  votes      Vote[]
 }
