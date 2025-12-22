@@ -20,16 +20,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { storyId, text, parentId, userId } = await request.json()
+    const { storyId, showHnId, text, parentId, userId } = await request.json()
 
-    if (!storyId || !text) {
-      return NextResponse.json({ error: 'storyId and text are required' }, { status: 400 })
+    if (!text) {
+      return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
-    const comment = await createComment(storyId, userId || null, text, parentId)
+    if (!storyId && !showHnId) {
+      return NextResponse.json({ error: 'Either storyId or showHnId is required' }, { status: 400 })
+    }
+
+    const comment = await createComment(storyId, showHnId, userId || null, text, parentId)
 
     if (!comment) {
-      return NextResponse.json({ error: 'Failed to create comment' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create comment - validation failed' }, { status: 400 })
     }
 
     return NextResponse.json(comment, { status: 201 })

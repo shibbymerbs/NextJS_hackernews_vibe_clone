@@ -94,11 +94,44 @@ export async function getAllStories() {
   }
 }
 
-export async function createComment(storyId: string, userId: string | null, text: string, parentId: string | null = null) {
+export async function createComment(storyId: string | null, showHnId: string | null, userId: string | null, text: string, parentId: string | null = null) {
   try {
+    // Check if story or showHN exists
+    let postExists = false
+
+    if (storyId) {
+      const story = await prisma.story.findUnique({
+        where: { id: storyId }
+      })
+      postExists = !!story
+    } else if (showHnId) {
+      const showHn = await prisma.showHN.findUnique({
+        where: { id: showHnId }
+      })
+      postExists = !!showHn
+    }
+
+    if (!postExists) {
+      console.error(`Story with ID ${storyId} or ShowHN with ID ${showHnId} not found`)
+      return null
+    }
+
+    // Check if parent comment exists (if parentId is provided)
+    let parentComment = null
+    if (parentId) {
+      parentComment = await prisma.comment.findUnique({
+        where: { id: parentId }
+      })
+      if (!parentComment) {
+        console.error(`Parent comment with ID ${parentId} not found`)
+        return null
+      }
+    }
+
     const comment = await prisma.comment.create({
       data: {
         storyId,
+        showHnId,
         userId,
         text,
         parentId

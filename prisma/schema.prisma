@@ -45,8 +45,8 @@ model Comment {
   id          String    @id @default(cuid())
   userId      String?
   user        User?     @relation(fields: [userId], references: [id])
-  storyId     String
-  story       Story     @relation(fields: [storyId], references: [id])
+  storyId     String?
+  story       Story?    @relation(fields: [storyId], references: [id])
   showHnId    String?
   showHn      ShowHN?   @relation(fields: [showHnId], references: [id])
   parentId    String?

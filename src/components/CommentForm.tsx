@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function CommentForm({ storyId }: { storyId: string }) {
+export default function CommentForm({ storyId, showHnId }: { storyId?: string; showHnId?: string }) {
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -25,6 +25,7 @@ export default function CommentForm({ storyId }: { storyId: string }) {
         },
         body: JSON.stringify({
           storyId,
+          showHnId,
           text: commentText,
           userId: null // Allow null userId for anonymous comments
         }),

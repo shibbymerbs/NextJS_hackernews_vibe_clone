@@ -70,7 +70,7 @@ export default async function ShowHNPostPage({
 
             <div className="mb-8">
                 <h2 className="text-lg font-medium mb-4">{comments.length} comments</h2>
-                <CommentForm storyId={post.id} />
+                <CommentForm showHnId={post.id} />
             </div>
 
             <div className="space-y-6">
