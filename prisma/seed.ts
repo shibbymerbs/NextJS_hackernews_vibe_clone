@@ -13,7 +13,7 @@ async function main() {
     },
   })
 
-  // Seed a story
+  // Seed a story (link submission)
   const story = await prisma.story.upsert({
     where: { id: '1' },
     update: {},
@@ -24,6 +24,20 @@ async function main() {
       points: 100,
       userId: user.id,
       text: 'This is the content of the example story. It demonstrates how a story detail page would look in a Hacker News clone application. The story includes a title, author information, score, and comments section.',
+    },
+  })
+
+  // Seed an "ask" story (text-only submission)
+  const askStory = await prisma.story.upsert({
+    where: { id: '2' },
+    update: {},
+    create: {
+      id: '2',
+      title: 'What is the best JavaScript framework in 2025?',
+      url: null,
+      points: 42,
+      userId: user.id,
+      text: 'I\'m evaluating different frameworks for my next project. React, Vue, Svelte, and Angular all have their strengths. What would you recommend based on your recent experience?',
     },
   })
 

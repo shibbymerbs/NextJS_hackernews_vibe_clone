@@ -1,5 +1,51 @@
 import prisma from './db'
 
+/**
+ * Create a new story (for both links and ask posts)
+ * @param userId - User ID who created the story
+ * @param title - Story title
+ * @param url - URL (optional for text-only "ask" stories)
+ * @param text - Text content (optional)
+ * @returns Created story or null if failed
+ */
+export async function createStory(userId: string | null, title: string, url: string | null = null, text: string | null = null) {
+  try {
+    // Check if user exists, create if not (for demo purposes)
+    let user = null
+    if (userId) {
+      user = await prisma.user.findUnique({
+        where: { id: userId }
+      })
+    }
+
+    if (!user && userId) {
+      user = await prisma.user.create({
+        data: {
+          id: userId,
+          name: 'Demo User'
+        }
+      })
+    }
+
+    const story = await prisma.story.create({
+      data: {
+        userId: user?.id || null,
+        title,
+        url,
+        text
+      },
+      include: {
+        user: true
+      }
+    })
+
+    return story
+  } catch (error) {
+    console.error('Error creating story:', error)
+    return null
+  }
+}
+
 export async function getStoryById(id: string) {
   try {
     const story = await prisma.story.findUnique({
@@ -298,7 +344,7 @@ export async function upvoteComment(commentId: string, userId: string) {
         const comment = await prisma.comment.findUnique({
           where: { id: commentId }
         })
-  
+
         if (comment && comment.points > 0) {
           await prisma.comment.update({
             where: { id: commentId },

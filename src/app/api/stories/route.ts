@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getAllStories, getStoriesByFreshness } from '@/lib/stories'
+import prisma from '@/lib/db'
 
 export async function GET(request: Request) {
   try {
@@ -19,5 +20,36 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching stories:', error)
     return NextResponse.json([], { status: 500 })
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { title, text, url, userId } = body
+
+    if (!title) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+
+    const story = await prisma.story.create({
+      data: {
+        title,
+        text,
+        url,
+        userId
+      }
+    })
+
+    return NextResponse.json(story, { status: 201 })
+  } catch (error) {
+    console.error('Error creating story:', error)
+    return NextResponse.json(
+      { error: 'Failed to create story' },
+      { status: 500 }
+    )
   }
 }
