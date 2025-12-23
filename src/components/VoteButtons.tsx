@@ -90,18 +90,18 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
   if (isLoading) {
     return (
       <div className={`flex items-center space-x-2 ${className}`}>
-        <span className="text-hn-dark-gray text-sm">{points} points</span>
         <div className="flex flex-col space-y-1">
           <button className="vote-button disabled" disabled>▲</button>
           <button className="vote-button disabled" disabled>▼</button>
         </div>
+        <span className="text-hn-dark-gray text-sm">{points} points</span>
       </div>
     )
   }
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <span className="text-hn-dark-gray text-sm">{points} points</span>
+
       <div className="flex flex-col space-y-1">
         <button
           className={`vote-button ${userVote === 'upvote' ? 'active' : ''}`}
@@ -117,7 +117,9 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
         >
           ▼
         </button>
+
       </div>
+      <span className="text-hn-dark-gray text-sm">{points} points</span>
     </div>
   )
 }

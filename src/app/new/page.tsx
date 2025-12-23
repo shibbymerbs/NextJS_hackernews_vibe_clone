@@ -7,11 +7,11 @@ interface Story {
     title: string
     points: number
     userId: string | null
-    user: {
+    user?: {
         name: string | null
     } | null
     _count?: {
-        comments: number
+        comments?: number
     }
     createdAt: Date | string
 }
@@ -37,7 +37,7 @@ export default async function NewPage() {
                                         userId={null} // For now, we'll use null userId
                                     />
                                     <p className="text-sm text-hn-dark-gray">
-                                        by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count?.comments || 0} comments</Link>
+                                        by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count?.comments ?? 0} comments</Link>
                                     </p>
                                 </div>
                             </div>

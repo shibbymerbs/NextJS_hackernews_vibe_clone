@@ -1,4 +1,5 @@
 import prisma from './db'
+import type { Story, Comment, Vote, StoryWithVotes, StoryWithFreshness } from '@/types'
 
 /**
  * Create a new story (for both links and ask posts)
@@ -8,7 +9,7 @@ import prisma from './db'
  * @param text - Text content (optional)
  * @returns Created story or null if failed
  */
-export async function createStory(userId: string | null, title: string, url: string | null = null, text: string | null = null) {
+export async function createStory(userId: string | null, title: string, url: string | null = null, text: string | null = null): Promise<Story | null> {
   try {
     // Check if user exists, create if not (for demo purposes)
     let user = null
@@ -46,7 +47,7 @@ export async function createStory(userId: string | null, title: string, url: str
   }
 }
 
-export async function getStoryById(id: string) {
+export async function getStoryById(id: string): Promise<Story | null> {
   try {
     const story = await prisma.story.findUnique({
       where: { id },
@@ -73,7 +74,7 @@ export async function getStoryById(id: string) {
   }
 }
 
-export async function getAllStories() {
+export async function getAllStories(): Promise<Story[]> {
   try {
     const stories = await prisma.story.findMany({
       include: {
@@ -94,7 +95,7 @@ export async function getAllStories() {
   }
 }
 
-export async function createComment(storyId: string | null, showHnId: string | null, userId: string | null, text: string, parentId: string | null = null) {
+export async function createComment(storyId: string | null, showHnId: string | null, userId: string | null, text: string, parentId: string | null = null): Promise<Comment | null> {
   try {
     // Check if story or showHN exists
     let postExists = false
@@ -148,7 +149,7 @@ export async function createComment(storyId: string | null, showHnId: string | n
   }
 }
 
-export async function getCommentsByStoryId(storyId: string) {
+export async function getCommentsByStoryId(storyId: string): Promise<Comment[]> {
   try {
     const comments = await prisma.comment.findMany({
       where: {
@@ -185,7 +186,7 @@ export async function getCommentsByStoryId(storyId: string) {
   }
 }
 
-export async function upvoteStory(storyId: string, userId: string) {
+export async function upvoteStory(storyId: string, userId: string): Promise<{ success: boolean; action?: string; newVoteType?: 'upvote' | 'downvote' | null, error?: string }> {
   try {
     // Check if user exists, create if not (for demo purposes)
     let user = await prisma.user.findUnique({
@@ -261,7 +262,7 @@ export async function upvoteStory(storyId: string, userId: string) {
   }
 }
 
-export async function downvoteStory(storyId: string, userId: string) {
+export async function downvoteStory(storyId: string, userId: string): Promise<{ success: boolean; action?: string; newVoteType?: 'upvote' | 'downvote' | null, error?: string }> {
   try {
     // Check if user already voted on this story
     const existingVote = await prisma.vote.findUnique({
@@ -323,7 +324,7 @@ export async function downvoteStory(storyId: string, userId: string) {
   }
 }
 
-export async function getUserVote(storyId: string, userId: string) {
+export async function getUserVote(storyId: string, userId: string): Promise<Vote | null> {
   try {
     const vote = await prisma.vote.findUnique({
       where: {
@@ -340,7 +341,7 @@ export async function getUserVote(storyId: string, userId: string) {
   }
 }
 
-export async function upvoteComment(commentId: string, userId: string) {
+export async function upvoteComment(commentId: string, userId: string): Promise<{ success: boolean; action?: string; newVoteType?: 'upvote' | 'downvote' | null, error?: string }> {
   try {
     // Check if user exists, create if not (for demo purposes)
     let user = await prisma.user.findUnique({
@@ -420,7 +421,7 @@ export async function upvoteComment(commentId: string, userId: string) {
   }
 }
 
-export async function downvoteComment(commentId: string, userId: string) {
+export async function downvoteComment(commentId: string, userId: string): Promise<{ success: boolean; action?: string; newVoteType?: 'upvote' | 'downvote' | null, error?: string }> {
   try {
     // Check if user exists, create if not (for demo purposes)
     let user = await prisma.user.findUnique({
@@ -507,7 +508,7 @@ export async function downvoteComment(commentId: string, userId: string) {
   }
 }
 
-export async function getUserCommentVote(commentId: string, userId: string) {
+export async function getUserCommentVote(commentId: string, userId: string): Promise<Vote | null> {
   try {
     const vote = await prisma.vote.findUnique({
       where: {
@@ -530,7 +531,7 @@ export async function getUserCommentVote(commentId: string, userId: string) {
  * @param now - Current timestamp for calculation
  * @returns Freshness score (higher = fresher)
  */
-export function calculateFreshnessScore(story: any, now: Date = new Date()): number {
+export function calculateFreshnessScore(story: Story, now: Date = new Date()): number {
   // Base freshness factors
   const submissionTime = new Date(story.createdAt)
   const hoursSinceSubmission = (now.getTime() - submissionTime.getTime()) / (1000 * 60 * 60)
@@ -538,7 +539,7 @@ export function calculateFreshnessScore(story: any, now: Date = new Date()): num
   // Get most recent vote time (if any votes exist)
   let lastVoteTime = submissionTime
   if (story.votes && story.votes.length > 0) {
-    const recentVotes = story.votes.sort((a: any, b: any) =>
+    const recentVotes = story.votes.sort((a: Vote, b: Vote) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
     lastVoteTime = new Date(recentVotes[0].createdAt)
@@ -579,7 +580,7 @@ export function calculateFreshnessScore(story: any, now: Date = new Date()): num
  * Get stories sorted by freshness algorithm
  * @returns Stories sorted by freshness score
  */
-export async function getStoriesByFreshness() {
+export async function getStoriesByFreshness(): Promise<StoryWithFreshness[]> {
   try {
     const now = new Date()
 
@@ -614,13 +615,13 @@ export async function getStoriesByFreshness() {
     )
 
     // Calculate freshness score for each story
-    const storiesWithFreshness = stories.map((story: any) => ({
+    const storiesWithFreshness = stories.map((story: Story) => ({
       ...story,
       freshnessScore: calculateFreshnessScore(story, now)
     }))
 
     // Sort by freshness score (highest first)
-    const sortedStories = storiesWithFreshness.sort((a: any, b: any) =>
+    const sortedStories = storiesWithFreshness.sort((a: StoryWithFreshness, b: StoryWithFreshness) =>
       b.freshnessScore - a.freshnessScore
     )
 
@@ -637,14 +638,14 @@ export async function getStoriesByFreshness() {
  * @param now - Current timestamp for calculation
  * @returns Freshness score (higher = fresher)
  */
-export function calculateCommentFreshnessScore(comment: any, now: Date = new Date()): number {
+export function calculateCommentFreshnessScore(comment: Comment, now: Date = new Date()): number {
   const submissionTime = new Date(comment.createdAt)
   const hoursSinceSubmission = (now.getTime() - submissionTime.getTime()) / (1000 * 60 * 60)
 
   // Get most recent vote time (if any votes exist)
   let lastVoteTime = submissionTime
   if (comment.votes && comment.votes.length > 0) {
-    const recentVotes = comment.votes.sort((a: any, b: any) =>
+    const recentVotes = comment.votes.sort((a: Vote, b: Vote) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     )
     lastVoteTime = new Date(recentVotes[0].createdAt)

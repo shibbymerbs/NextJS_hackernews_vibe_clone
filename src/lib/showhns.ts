@@ -1,3 +1,4 @@
+import { ShowHN, ShowHNWithFreshness } from '@/types'
 import prisma from './db'
 
 /**
@@ -7,7 +8,7 @@ import prisma from './db'
  * @param url - URL to the project
  * @returns Created ShowHN post or null if failed
  */
-export async function createShowHN(userId: string | null, title: string, url: string) {
+export async function createShowHN(userId: string | null, title: string, url: string): Promise<ShowHN | null> {
     try {
         // Check if user exists, create if not (for demo purposes)
         let user = null
@@ -49,7 +50,7 @@ export async function createShowHN(userId: string | null, title: string, url: st
  * @param id - Post ID
  * @returns ShowHN post or null if not found
  */
-export async function getShowHNById(id: string) {
+export async function getShowHNById(id: string): Promise<ShowHN | null> {
     try {
         const showhn = await prisma.showHN.findUnique({
             where: { id },
@@ -80,7 +81,7 @@ export async function getShowHNById(id: string) {
  * Get all Show HN posts
  * @returns Array of ShowHN posts
  */
-export async function getAllShowHNs() {
+export async function getAllShowHNs(): Promise<ShowHN[]> {
     try {
         const showhns = await prisma.showHN.findMany({
             include: {
@@ -156,7 +157,7 @@ export function calculateShowHNFreshnessScore(post: any, now: Date = new Date())
  * Get Show HN posts sorted by freshness algorithm
  * @returns ShowHN posts sorted by freshness score
  */
-export async function getShowHNsByFreshness() {
+export async function getShowHNsByFreshness(): Promise<ShowHNWithFreshness[]> {
     try {
         const now = new Date()
 
