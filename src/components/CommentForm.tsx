@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-export default function CommentForm({ storyId, showHnId }: { storyId?: string; showHnId?: string }) {
+export default function CommentForm({ storyId, showHnId, parentId }: { storyId?: string; showHnId?: string; parentId?: string }) {
   const [commentText, setCommentText] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -26,6 +26,7 @@ export default function CommentForm({ storyId, showHnId }: { storyId?: string; s
         body: JSON.stringify({
           storyId,
           showHnId,
+          parentId,
           text: commentText,
           userId: null // Allow null userId for anonymous comments
         }),
@@ -70,7 +71,7 @@ export default function CommentForm({ storyId, showHnId }: { storyId?: string; s
         disabled={isSubmitting || !commentText.trim()}
         className="px-4 py-2 bg-hn-orange text-white rounded-md hover:bg-hn-orange-dark disabled:bg-hn-light-gray disabled:cursor-not-allowed transition-colors"
       >
-        {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+        {isSubmitting ? 'Submitting...' : parentId ? 'Reply' : 'Submit Comment'}
       </button>
     </form>
   )

@@ -26,7 +26,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
     }
 
-    if (!storyId && !showHnId) {
+    // For replies (parentId provided), we don't require explicit storyId/showHnId
+    // as they will be inherited from the parent comment in createComment
+    if (!storyId && !showHnId && !parentId) {
       return NextResponse.json({ error: 'Either storyId or showHnId is required' }, { status: 400 })
     }
 

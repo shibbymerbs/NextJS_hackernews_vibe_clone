@@ -3,6 +3,7 @@ import { getStoryById } from '@/lib/stories'
 import CommentForm from '@/components/CommentForm'
 import VoteButtons from '@/components/VoteButtons'
 import CommentVoteButtons from '@/components/CommentVoteButtons'
+import ReplyButton from '@/components/ReplyButton'
 import { StoryWithComments, Comment } from '@/types'
 
 export default async function StoryPage({
@@ -55,6 +56,7 @@ export default async function StoryPage({
 
             </div>
             <p className="text-base text-hn-darkest-gray whitespace-pre-wrap">{comment.text}</p>
+            <ReplyButton parentId={comment.id} />
             {comment.children && comment.children.length > 0 && renderComments(comment.children, depth + 1)}
           </div>
         </div>

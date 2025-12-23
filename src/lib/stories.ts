@@ -97,24 +97,47 @@ export async function getAllStories(): Promise<Story[]> {
 
 export async function createComment(storyId: string | null, showHnId: string | null, userId: string | null, text: string, parentId: string | null = null): Promise<Comment | null> {
   try {
-    // Check if story or showHN exists
+    // Check if story or showHN exists (only required for top-level comments)
     let postExists = false
 
-    if (storyId) {
-      const story = await prisma.story.findUnique({
-        where: { id: storyId }
-      })
-      postExists = !!story
-    } else if (showHnId) {
-      const showHn = await prisma.showHN.findUnique({
-        where: { id: showHnId }
-      })
-      postExists = !!showHn
-    }
+    if (!parentId) {
+      // For top-level comments, we need either storyId or showHnId
+      if (storyId) {
+        const story = await prisma.story.findUnique({
+          where: { id: storyId }
+        })
+        postExists = !!story
+      } else if (showHnId) {
+        const showHn = await prisma.showHN.findUnique({
+          where: { id: showHnId }
+        })
+        postExists = !!showHn
+      }
 
-    if (!postExists) {
-      console.error(`Story with ID ${storyId} or ShowHN with ID ${showHnId} not found`)
-      return null
+      if (!postExists) {
+        console.error(`Story with ID ${storyId} or ShowHN with ID ${showHnId} not found`)
+        return null
+      }
+    } else {
+      // For replies (parentId provided), inherit storyId/showHnId from parent comment
+      const parentComment = await prisma.comment.findUnique({
+        where: { id: parentId },
+        select: { storyId: true, showHnId: true }
+      })
+
+      if (!parentComment) {
+        console.error(`Parent comment with ID ${parentId} not found`)
+        return null
+      }
+
+      // Inherit from parent
+      storyId = parentComment.storyId || null
+      showHnId = parentComment.showHnId || null
+
+      if (!storyId && !showHnId) {
+        console.error(`Parent comment ${parentId} doesn't belong to a valid post`)
+        return null
+      }
     }
 
     // Check if parent comment exists (if parentId is provided)
