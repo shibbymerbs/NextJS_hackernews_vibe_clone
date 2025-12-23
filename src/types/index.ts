@@ -43,6 +43,12 @@ export interface StoryWithVotes extends Story {
     votes?: Vote[]
 }
 
+/** Story with comments and votes (for detailed view) */
+export interface StoryWithComments extends Story {
+    comments?: Comment[]
+    votes?: Vote[]
+}
+
 /** Story with freshness score */
 export interface StoryWithFreshness extends Story {
     freshnessScore: number
@@ -59,7 +65,7 @@ export interface Comment {
     points: number
     createdAt: Date
     updatedAt: Date
-    user?: User | null
+    user?: ApiUser | null
     children?: Comment[]
     _count?: {
         children?: number

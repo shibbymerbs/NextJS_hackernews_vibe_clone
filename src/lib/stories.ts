@@ -1,5 +1,5 @@
 import prisma from './db'
-import type { Story, Comment, Vote, StoryWithVotes, StoryWithFreshness } from '@/types'
+import type { Story, Comment, Vote, StoryWithVotes, StoryWithFreshness, StoryWithComments } from '@/types'
 
 /**
  * Create a new story (for both links and ask posts)
@@ -47,7 +47,7 @@ export async function createStory(userId: string | null, title: string, url: str
   }
 }
 
-export async function getStoryById(id: string): Promise<Story | null> {
+export async function getStoryById(id: string): Promise<StoryWithComments | null> {
   try {
     const story = await prisma.story.findUnique({
       where: { id },
