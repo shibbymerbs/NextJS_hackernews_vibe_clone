@@ -174,7 +174,7 @@ export async function getShowHNsByFreshness() {
 
         // Fetch votes separately for each post to avoid complex include issues
         const showhnsWithVotes = await Promise.all(
-            showhns.map(async (post) => {
+            showhns.map(async (post: any) => {
                 const votes = await prisma.vote.findMany({
                     where: {
                         showHnId: post.id
@@ -191,13 +191,13 @@ export async function getShowHNsByFreshness() {
         )
 
         // Calculate freshness score for each post
-        const showhnsWithFreshness = showhns.map(post => ({
+        const showhnsWithFreshness = showhns.map((post: any) => ({
             ...post,
             freshnessScore: calculateShowHNFreshnessScore(post, now)
         }))
 
         // Sort by freshness score (highest first)
-        const sortedShowHNs = showhnsWithFreshness.sort((a, b) =>
+        const sortedShowHNs = showhnsWithFreshness.sort((a: any, b: any) =>
             b.freshnessScore - a.freshnessScore
         )
 

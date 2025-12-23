@@ -62,7 +62,7 @@ export default async function ShowHNPostPage({
             </div>
 
             <div className="space-y-6">
-                {comments.map((comment) => (
+                {comments.map((comment: any, index: number) => (
                     <div key={comment.id} className="border-b border-gray-200 pb-4">
                         <div className="flex items-start space-x-3">
                             <div className="flex-1">

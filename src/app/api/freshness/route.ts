@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       // For now, use a simplified freshness calculation without vote data
       // due to Prisma client issues. This can be enhanced later.
       const now = new Date()
-      const storiesWithFreshness = stories.map(story => {
+      const storiesWithFreshness = stories.map((story: any) => {
         const submissionTime = new Date(story.createdAt)
         const hoursSinceSubmission = (now.getTime() - submissionTime.getTime()) / (1000 * 60 * 60)
 
@@ -52,7 +52,7 @@ export async function GET(request: Request) {
       })
 
       // Sort by freshness
-      const freshStories = storiesWithFreshness.sort((a, b) =>
+      const freshStories = storiesWithFreshness.sort((a: any, b: any) =>
         b.freshnessScore - a.freshnessScore
       )
 
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
 
       // Simplified freshness calculation for comments
       const now = new Date()
-      const commentsWithFreshness = comments.map(comment => {
+      const commentsWithFreshness = comments.map((comment: any) => {
         const submissionTime = new Date(comment.createdAt)
         const hoursSinceSubmission = (now.getTime() - submissionTime.getTime()) / (1000 * 60 * 60)
 
@@ -100,7 +100,7 @@ export async function GET(request: Request) {
       })
 
       // Sort by freshness
-      const freshComments = commentsWithFreshness.sort((a, b) =>
+      const freshComments = commentsWithFreshness.sort((a: any, b: any) =>
         b.freshnessScore - a.freshnessScore
       )
 

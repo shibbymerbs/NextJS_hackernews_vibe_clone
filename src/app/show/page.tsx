@@ -21,7 +21,7 @@ export default async function ShowPage() {
             <ShowHNForm />
 
             <div className="space-y-4">
-                {showhns.map((post, index) => (
+                {showhns.map((post: any, index: number) => (
                     <div key={post.id} className="story-item">
                         <div className="flex items-start space-x-2">
                             <span className="text-hn-dark-gray text-sm">{index + 1}.</span>

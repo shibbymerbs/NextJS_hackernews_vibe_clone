@@ -20,7 +20,7 @@ export default async function Home() {
       </header>
 
       <div className="space-y-4">
-        {stories.map((story, index) => (
+        {stories.map((story: any, index: number) => (
           <div key={story.id} className="story-item">
             <div className="flex items-start space-x-2">
               <span className="text-hn-dark-gray text-sm">{index + 1}.</span>

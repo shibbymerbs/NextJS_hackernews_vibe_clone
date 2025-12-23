@@ -614,13 +614,13 @@ export async function getStoriesByFreshness() {
     )
 
     // Calculate freshness score for each story
-    const storiesWithFreshness = stories.map(story => ({
+    const storiesWithFreshness = stories.map((story: any) => ({
       ...story,
       freshnessScore: calculateFreshnessScore(story, now)
     }))
 
     // Sort by freshness score (highest first)
-    const sortedStories = storiesWithFreshness.sort((a, b) =>
+    const sortedStories = storiesWithFreshness.sort((a: any, b: any) =>
       b.freshnessScore - a.freshnessScore
     )
 

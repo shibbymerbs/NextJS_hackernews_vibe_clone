@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
+
   // Seed a user
   const user = await prisma.user.upsert({
     where: { email: 'user@example.com' },
@@ -37,7 +38,7 @@ async function main() {
       url: null,
       points: 42,
       userId: user.id,
-      text: 'I\'m evaluating different frameworks for my next project. React, Vue, Svelte, and Angular all have their strengths. What would you recommend based on your recent experience?',
+      text: "I'm evaluating different frameworks for my next project. React, Vue, Svelte, and Angular all have their strengths. What would you recommend based on your recent experience?",
     },
   })
 
@@ -73,6 +74,29 @@ async function main() {
       userId: user.id,
       storyId: story.id,
       parentId: comment2.id,
+    },
+  })
+
+  // Seed votes
+  await prisma.vote.upsert({
+    where: { id: '1' },
+    update: {},
+    create: {
+      id: '1',
+      type: 'upvote',
+      userId: user.id,
+      storyId: story.id,
+    },
+  })
+
+  await prisma.vote.upsert({
+    where: { id: '2' },
+    update: {},
+    create: {
+      id: '2',
+      type: 'downvote',
+      userId: user.id,
+      commentId: comment1.id,
     },
   })
 
