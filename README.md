@@ -128,6 +128,46 @@ This project is configured for easy deployment on Vercel:
 vercel
 ```
 
+## Testing
+
+This project uses Jest as the testing framework with TypeScript support.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode (re-runs when files change)
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+### Test Coverage
+
+The test suite includes the following coverage:
+
+- **File Existence Tests**: Verifies critical application files are present
+- **API Endpoint Tests**: Tests for stories, comments, and freshness endpoints
+- **Database Setup Tests**: Validates database migrations and schema
+- **Freshness Algorithm Tests**: Ensures proper story ranking calculations
+- **Comment Creation Tests**: Validates comment submission functionality
+
+### Test Structure
+
+Tests are organized in the `__tests__` directory:
+
+```
+__tests__
+├── ask.test.ts          # File existence checks
+├── comment-creation.test.ts  # API endpoint tests
+├── freshness.test.ts    # Freshness algorithm tests
+├── setup.test.ts        # Database setup and migration tests
+└── verify.test.ts       # Schema verification tests
+```
+
 ## License
 
 MIT
