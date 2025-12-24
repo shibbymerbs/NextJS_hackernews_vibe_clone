@@ -13,13 +13,20 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url)
     const sort = searchParams.get('sort')
+    const pageParam = searchParams.get('page') || '1'
+    const limitParam = searchParams.get('limit') || '20'
+
+    // Parse pagination parameters with validation
+    const page = Math.max(1, parseInt(pageParam, 10) || 1)
+    const limit = Math.min(100, Math.max(1, parseInt(limitParam, 10) || 20))
 
     let stories
     if (sort === 'freshness') {
-      // Use freshness algorithm for sorting
-      stories = await getStoriesByFreshness()
+      // Use freshness algorithm for sorting with pagination
+      const { stories: freshStories } = await getStoriesByFreshness(page, limit)
+      stories = freshStories
     } else {
-      // Default sorting (by creation date)
+      // Default sorting (by creation date) - TODO: add pagination here too
       stories = await getAllStories()
     }
 

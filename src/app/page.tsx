@@ -1,9 +1,21 @@
 import Link from 'next/link'
 import { getStoriesByFreshness } from '@/lib/stories'
 import VoteButtons from '@/components/VoteButtons'
+import Pagination from '@/components/Pagination'
 
-export default async function Home() {
-  const stories = await getStoriesByFreshness()
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined }
+}) {
+  const page = typeof searchParams.page === 'string' ? parseInt(searchParams.page, 10) : 1
+  const currentPage = isNaN(page) || page < 1 ? 1 : page
+
+  // Get paginated stories and total count
+  const { stories, totalCount } = await getStoriesByFreshness(currentPage)
+
+  // Calculate total pages (20 stories per page)
+  const totalPages = Math.ceil(totalCount / 20)
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-8">
@@ -30,6 +42,10 @@ export default async function Home() {
           </div>
         ))}
       </div>
+
+      {totalPages > 1 && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} />
+      )}
     </main>
   )
 }

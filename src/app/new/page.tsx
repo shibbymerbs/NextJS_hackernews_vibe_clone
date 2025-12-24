@@ -17,7 +17,7 @@ interface Story {
 }
 
 export default async function NewPage() {
-    const stories: Story[] = await getStoriesByFreshness()
+    const { stories } = await getStoriesByFreshness()
 
     return (
         <main className="max-w-4xl mx-auto px-4 py-8">

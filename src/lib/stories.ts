@@ -677,9 +677,11 @@ export function calculateFreshnessScore(story: Story, now: Date = new Date()): n
 
 /**
  * Get stories sorted by freshness algorithm
- * @returns Stories sorted by freshness score
+ * @param page - Page number for pagination (default: 1)
+ * @param pageSize - Number of stories per page (default: 20)
+ * @returns Stories sorted by freshness score with pagination
  */
-export async function getStoriesByFreshness(): Promise<StoryWithFreshness[]> {
+export async function getStoriesByFreshness(page: number = 1, pageSize: number = 20): Promise<{ stories: StoryWithFreshness[], totalCount: number }> {
   try {
     const now = new Date()
 
@@ -724,10 +726,18 @@ export async function getStoriesByFreshness(): Promise<StoryWithFreshness[]> {
       b.freshnessScore - a.freshnessScore
     )
 
-    return sortedStories
+    // Apply pagination
+    const totalCount = sortedStories.length
+    const startIndex = (page - 1) * pageSize
+    const paginatedStories = sortedStories.slice(startIndex, startIndex + pageSize)
+
+    return {
+      stories: paginatedStories,
+      totalCount
+    }
   } catch (error) {
     console.error('Error fetching stories by freshness:', error)
-    return []
+    return { stories: [], totalCount: 0 }
   }
 }
 
