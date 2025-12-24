@@ -67,7 +67,7 @@ export default async function ShowHNPostPage({
                         <div className="flex items-start space-x-3">
                             <div className="flex-1">
                                 <p className="text-sm text-hn-dark-gray mb-2">
-                                    by {comment.user?.name || 'anonymous'} {comment._count?.votes}
+                                    by <Link href={`/user/${comment.userId}`} className="hn-link">{comment.user?.name || 'anonymous'}</Link> {comment._count?.votes}
                                 </p>
                                 <p className="whitespace-pre-wrap">{comment.text}</p>
                             </div>

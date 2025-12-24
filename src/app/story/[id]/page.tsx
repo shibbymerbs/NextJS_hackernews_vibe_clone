@@ -50,7 +50,7 @@ export default async function StoryPage({
           <div className="flex-1">
 
             <div className="flex items-center space-x-2 mb-1">
-              <span className="text-sm font-medium text-hn-dark-gray">{comment.user?.name || 'anonymous'}</span>
+              <span className="text-sm font-medium text-hn-dark-gray">by <Link href={`/user/${comment.userId}`} className="hn-link">{comment.user?.name || 'anonymous'}</Link></span>
               <span className="text-sm text-hn-light-gray" title={new Date(comment.createdAt).toDateString() + ' ' + new Date(comment.createdAt).toLocaleTimeString()} >{timeAgo(new Date(comment.createdAt))}</span>
 
             </div>
