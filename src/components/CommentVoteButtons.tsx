@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { auth } from '@/auth'
 
 interface CommentVoteButtonsProps {
   commentId: string
@@ -20,9 +19,21 @@ export default function CommentVoteButtons({ commentId, initialPoints, className
   const effectiveUserId = session?.user?.id || 'demo-user-123'
 
   useEffect(() => {
-    const fetchUserVote = async (effectiveUserId: string) => {
+    const fetchUserVote = async () => {
       try {
-        const response = await fetch(`/api/votes?commentId=${commentId}&userId=${effectiveUserId}`)
+        const response = await fetch(`/api/votes?commentId=${commentId}`, {
+          credentials: 'include' as const,
+        })
+
+        if (!response.ok) {
+          // Handle 401 Unauthorized - user needs to login
+          if (response.status === 401) {
+            setIsLoading(false)
+            return
+          }
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const data = await response.json()
         if (data.vote) {
           setUserVote(data.vote)
@@ -34,7 +45,7 @@ export default function CommentVoteButtons({ commentId, initialPoints, className
       }
     }
 
-    fetchUserVote(effectiveUserId)
+    fetchUserVote()
   }, [commentId, effectiveUserId, session?.user?.id])
 
   const handleVote = async (voteType: 'upvote' | 'downvote') => {
@@ -44,12 +55,21 @@ export default function CommentVoteButtons({ commentId, initialPoints, className
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include' as const,
         body: JSON.stringify({
           commentId,
-          action: voteType,
-          userId: effectiveUserId
+          action: voteType
         }),
       })
+
+      if (!response.ok) {
+        // Handle 401 Unauthorized - user needs to login
+        if (response.status === 401) {
+          alert('Please login to vote')
+          return
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
       const result = await response.json()
 

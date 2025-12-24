@@ -1,8 +1,8 @@
 import Link from 'next/link'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth-server'
 
 export default async function Header() {
-    const session = await auth()
+    const session = await getSession()
     return (
         <header className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-hn-orange">
@@ -16,7 +16,7 @@ export default async function Header() {
                 {session?.user ? (
                     <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">
-                            {session.user.name || session.user.email}
+                            {(session.user as any).name || (session.user as any).email}
                         </span>
                         <Link
                             href="/api/auth/signout"

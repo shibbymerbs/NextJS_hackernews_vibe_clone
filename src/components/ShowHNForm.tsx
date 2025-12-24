@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { auth } from '@/auth'
 
 export default function ShowHNForm() {
     const [title, setTitle] = useState('')
@@ -26,6 +25,7 @@ export default function ShowHNForm() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include' as const,
                 body: JSON.stringify({
                     title,
                     url: url.trim() || null

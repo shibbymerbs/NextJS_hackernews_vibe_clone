@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { auth } from '@/auth'
 
 interface ShowHNVoteButtonsProps {
     showhnId: string
@@ -20,9 +19,9 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
     const effectiveUserId = session?.user?.id
 
     useEffect(() => {
-        const fetchUserVote = async (effectiveUserId: string) => {
+        const fetchUserVote = async () => {
             try {
-                const response = await fetch(`/api/showhns?showhnId=${showhnId}&userId=${effectiveUserId}`)
+                const response = await fetch(`/api/showhns?showhnId=${showhnId}`)
                 const data = await response.json()
                 if (data.vote) {
                     setUserVote(data.vote)
@@ -35,7 +34,7 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
         }
 
         if (effectiveUserId) {
-            fetchUserVote(effectiveUserId)
+            fetchUserVote()
         }
     }, [showhnId, effectiveUserId])
 
@@ -43,14 +42,13 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
 
         try {
             const response = await fetch('/api/showhns', {
-                method: 'POST',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     showhnId,
-                    type: voteType,
-                    userId: effectiveUserId!
+                    type: voteType
                 }),
             })
 

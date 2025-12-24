@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createComment, getCommentsByStoryId } from '@/lib/stories'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth-server'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -21,7 +21,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    const session = await getSession()
+
+    // Verify the request has cookies attached
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) {
+      console.warn('No cookie header in request')
+    }
     const body = await request.json()
 
     // Require authentication for posting comments

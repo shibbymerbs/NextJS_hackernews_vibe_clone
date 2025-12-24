@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getAllStories, getStoriesByFreshness } from '@/lib/stories'
 import prisma from '@/lib/db'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth-server'
 
 export async function GET(request: Request) {
   try {
+    // Verify the request has cookies attached
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) {
+      console.warn('No cookie header in request for stories GET')
+    }
+
     const { searchParams } = new URL(request.url)
     const sort = searchParams.get('sort')
 
@@ -26,7 +32,13 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    // Verify the request has cookies attached
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) {
+      console.warn('No cookie header in request for stories POST')
+    }
+
+    const session = await getSession()
     const body = await request.json()
     const { title, text, url } = body
 

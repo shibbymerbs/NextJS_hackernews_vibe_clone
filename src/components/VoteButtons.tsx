@@ -21,7 +21,19 @@ export default function VoteButtons({ storyId, initialPoints, className = '' }: 
   useEffect(() => {
     const fetchUserVote = async () => {
       try {
-        const response = await fetch(`/api/votes?storyId=${storyId}`)
+        const response = await fetch(`/api/votes?storyId=${storyId}`, {
+          credentials: 'include' as const,
+        })
+
+        if (!response.ok) {
+          // Handle 401 Unauthorized - user needs to login
+          if (response.status === 401) {
+            setIsLoading(false)
+            return
+          }
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
         const data = await response.json()
         if (data.vote) {
           setUserVote(data.vote)
@@ -46,11 +58,21 @@ export default function VoteButtons({ storyId, initialPoints, className = '' }: 
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include' as const,
         body: JSON.stringify({
           storyId,
           action: voteType
         }),
       })
+
+      if (!response.ok) {
+        // Handle 401 Unauthorized - user needs to login
+        if (response.status === 401) {
+          alert('Please login to vote')
+          return
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
 
       const result = await response.json()
 

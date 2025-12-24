@@ -9,11 +9,17 @@ import {
   getStoriesByFreshness
 } from '@/lib/stories'
 import { sortStoriesByFreshness, sortCommentsByFreshness } from '@/lib/freshness'
-import { auth } from '@/auth'
+import { getSession } from '@/lib/auth-server'
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
+    // Verify the request has cookies attached
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) {
+      console.warn('No cookie header in request for votes POST')
+    }
+
+    const session = await getSession()
     const body = await request.json()
 
     // Get user ID from session
@@ -62,7 +68,13 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
-    const session = await auth()
+    // Verify the request has cookies attached
+    const cookieHeader = request.headers.get('cookie')
+    if (!cookieHeader) {
+      console.warn('No cookie header in request for votes GET')
+    }
+
+    const session = await getSession()
     const { searchParams } = new URL(request.url)
     const sortType = searchParams.get('sort')
 

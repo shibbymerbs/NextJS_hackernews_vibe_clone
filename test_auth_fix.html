@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .test-section {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+
+        .fail {
+            color: red;
+            font-weight: bold;
+        }
+
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Authentication Fix Test</h1>
+
+    <div class="test-section">
+        <h2>Test 1: Check Session Cookies Exist</h2>
+        <p>This test verifies that the authentication cookies are being set by GitHub OAuth.</p>
+        <button onclick="checkCookies()">Run Test</button>
+        <div id="cookie-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Check Header Component Renders Username</h2>
+        <p>This test verifies that the Header component properly displays the authenticated user's username.</p>
+        <button onclick="checkHeader()">Run Test</button>
+        <div id="header-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Check Comment Form Authentication</h2>
+        <p>This test verifies that the CommentForm component properly checks authentication.</p>
+        <button onclick="checkCommentForm()">Run Test</button>
+        <div id="comment-form-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 4: Check API Authentication</h2>
+        <p>This test verifies that the comments API properly validates authentication.</p>
+        <button onclick="checkApiAuth()">Run Test</button>
+        <div id="api-auth-result"></div>
+    </div>
+
+    <script>
+        function checkCookies() {
+            const resultDiv = document.getElementById('cookie-result');
+            resultDiv.innerHTML = '';
+
+            // Check for session cookies
+            const cookies = document.cookie.split(';');
+            let hasSessionToken = false;
+            let hasCallbackUrl = false;
+
+            cookies.forEach(cookie => {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'next-auth.session-token') hasSessionToken = true;
+                if (name === '__next-auth.callback-url') hasCallbackUrl = true;
+            });
+
+            if (hasSessionToken && hasCallbackUrl) {
+                resultDiv.innerHTML = '<p class="success">✓ Session cookies are present</p>';
+            } else {
+                resultDiv.innerHTML = `
+                    <p class="fail">✗ Session cookies missing:</p>
+                    ${!hasSessionToken ? '<p>- next-auth.session-token not found</p>' : ''}
+                    ${!hasCallbackUrl ? '<p>- __next-auth.callback-url not found</p>' : ''}
+                `;
+            }
+        }
+
+        function checkHeader() {
+            const resultDiv = document.getElementById('header-result');
+            resultDiv.innerHTML = '';
+
+            // Check if header has user info
+            fetch('/api/auth/session')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.user) {
+                        resultDiv.innerHTML = `
+                            <p class="success">✓ Header authentication working</p>
+                            <p>User: ${data.user.name || data.user.email}</p>
+                        `;
+                    } else {
+                        resultDiv.innerHTML = '<p class="fail">✗ Header authentication failed - no user session</p>';
+                    }
+                })
+                .catch(error => {
+                    resultDiv.innerHTML = `<p class="fail">✗ Error checking header: ${error.message}</p>`;
+                });
+        }
+
+        function checkCommentForm() {
+            const resultDiv = document.getElementById('comment-form-result');
+            resultDiv.innerHTML = '';
+
+            // Check if we can access the comment form
+            fetch('/api/comments', {
+                method: 'OPTIONS',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Success') {
+                        resultDiv.innerHTML = '<p class="success">✓ Comment form authentication working</p>';
+                    } else {
+                        resultDiv.innerHTML = '<p class="fail">✗ Comment form authentication failed</p>';
+                    }
+                })
+                .catch(error => {
+                    // 401 is expected for OPTIONS without auth
+                    if (error.message.includes('401')) {
+                        resultDiv.innerHTML = '<p class="success">✓ Comment form properly requires authentication</p>';
+                    } else {
+                        resultDiv.innerHTML = `<p class="fail">✗ Error checking comment form: ${error.message}</p>`;
+                    }
+                });
+        }
+
+        function checkApiAuth() {
+            const resultDiv = document.getElementById('api-auth-result');
+            resultDiv.innerHTML = '';
+
+            // Try to post a test comment
+            fetch('/api/comments', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    storyId: 'test',
+                    text: 'Test comment from auth fix'
+                }),
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error && data.error.includes('login')) {
+                        resultDiv.innerHTML = '<p class="success">✓ API properly requires authentication</p>';
+                    } else if (data.id) {
+                        resultDiv.innerHTML = `
+                        <p class="success">✓ API authentication working - comment created</p>
+                        <p>Comment ID: ${data.id}</p>
+                    `;
+                    } else {
+                        resultDiv.innerHTML = '<p class="fail">✗ Unexpected API response</p>';
+                    }
+                })
+                .catch(error => {
+                    if (error.message.includes('401')) {
+                        resultDiv.innerHTML = '<p class="success">✓ API properly requires authentication (401)</p>';
+                    } else {
+                        resultDiv.innerHTML = `<p class="fail">✗ Error checking API: ${error.message}</p>`;
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>

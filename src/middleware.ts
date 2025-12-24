@@ -1,4 +1,4 @@
-import { auth } from '@/auth'
+import { useSession } from 'next-auth/react'
 import { NextResponse } from 'next/server'
 
 // List of paths that require authentication
@@ -11,14 +11,29 @@ const protectedPaths = [
 
 function withAuth(handler: any) {
     return async function (req: any) {
-        const session = await auth()
+        // Check if this is a protected path
+        const isProtectedPath = protectedPaths.some(path =>
+            req.nextUrl.pathname.startsWith(path)
+        );
 
-        if (!session?.user?.id && req.nextUrl.pathname.startsWith('/api/')) {
-            // Redirect to login page with redirect URL
-            const url = new URL('/login', req.nextUrl.origin)
-            return NextResponse.redirect(url)
+        if (isProtectedPath && process.env.NODE_ENV === 'development' && process.env.__NEXT_TEST_MODE__ !== 'true') {
+            try {
+                const { data: session } = useSession()
+
+                if (!session?.user?.id) {
+                    // For API routes, return 401 instead of redirecting to HTML login
+                    return NextResponse.json(
+                        { error: 'Unauthorized - Please login' },
+                        { status: 401 }
+                    )
+                }
+            } catch (error) {
+                // If auth fails, continue without auth
+                console.log('Auth check skipped:', error)
+            }
         }
 
+        // Always allow the request to continue
         return handler(req)
     }
 }

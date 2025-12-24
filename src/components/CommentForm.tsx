@@ -25,12 +25,12 @@ export default function CommentForm({ storyId, showHnId, parentId }: { storyId?:
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           storyId,
           showHnId,
           parentId,
-          text: commentText,
-          userId: session?.user?.id || null
+          text: commentText
         }),
       })
 
@@ -58,6 +58,14 @@ export default function CommentForm({ storyId, showHnId, parentId }: { storyId?:
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  if (!session?.user) {
+    return (
+      <div className="bg-gray-50 p-6 rounded-lg">
+        <p className="text-red-500 mb-4">Unauthorized - Please login Login to comment.</p>
+      </div>
+    )
   }
 
   return (

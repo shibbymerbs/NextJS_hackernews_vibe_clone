@@ -1,6 +1,5 @@
-import { signOut } from "@/auth";
-import { NextResponse } from "next/server";
+import { signOut } from '@/lib/auth-edge'
 
 export async function GET() {
-    return signOut();
+    return signOut({ redirectTo: '/' });
 }
