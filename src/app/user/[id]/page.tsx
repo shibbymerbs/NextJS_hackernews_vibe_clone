@@ -1,11 +1,17 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getSession } from '@/lib/auth-server';
 import { getUserById, getStoriesByUser, getAllCommentsByUser } from '@/lib/users';
+import { updateUserProfile } from '@/app/api/user/profile/actions';
 
 export default async function UserPage({
-    params
+    params,
+    searchParams
 }: {
     params: { id: string }
+    searchParams?: { [key: string]: string | string[] | undefined }
 }) {
+    const session = await getSession();
     const user = await getUserById(params.id);
     if (!user) return <div className="container mx-auto px-4 py-8">User not found</div>;
 
@@ -14,9 +20,70 @@ export default async function UserPage({
         getAllCommentsByUser(user.id)
     ]);
 
+    const isOwner = session?.user?.id === user.id;
+
     return (
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-2xl font-bold text-hn-dark-gray mb-6">User: {user.name}</h1>
+
+            {(user.bio || user.websiteUrl) && (
+                <div className="mb-6 p-4 bg-hn-light-gray rounded">
+                    {user.bio && (
+                        <p className="mb-2">{user.bio}</p>
+                    )}
+                    {user.websiteUrl && (
+                        <a href={user.websiteUrl} className="hn-link" target="_blank" rel="noopener noreferrer">
+                            {user.websiteUrl}
+                        </a>
+                    )}
+                </div>
+            )}
+
+            {isOwner && (
+                <div className="mb-6 p-4 bg-hn-light-gray rounded collapsible">
+                    <h3 className="text-lg font-semibold mb-2">Edit Profile</h3>
+                    <form action={updateUserProfile} className="space-y-4">
+                        <input type="hidden" name="userId" value={user.id} />
+                        <div>
+                            <label htmlFor="bio" className="block text-sm font-medium mb-1">Bio</label>
+                            <textarea
+                                id="bio"
+                                name="bio"
+                                defaultValue={user.bio || ''}
+                                className="w-full p-2 border border-hn-border rounded"
+                                rows={3}
+                            />
+                        </div>
+                        <div>
+                            <label htmlFor="websiteUrl" className="block text-sm font-medium mb-1">Website URL</label>
+                            <input
+                                id="websiteUrl"
+                                name="websiteUrl"
+                                defaultValue={user.websiteUrl || ''}
+                                type="url"
+                                className="w-full p-2 border border-hn-border rounded"
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                        >
+                            Save Profile
+                        </button>
+                    </form>
+                </div>
+            )}
+
+            {isOwner && session?.user && (
+                <div className="mb-6">
+                    {/* Check for success message in URL */}
+                    {searchParams?.message === 'profile_updated' && (
+                        <div className="p-4 bg-green-100 text-green-800 rounded border border-green-300">
+                            Profile updated successfully!
+                        </div>
+                    )}
+                </div>
+            )}
 
             <div className="mb-8">
                 <h2 className="text-xl font-semibold text-hn-dark-gray mb-4">Stories ({stories.length})</h2>

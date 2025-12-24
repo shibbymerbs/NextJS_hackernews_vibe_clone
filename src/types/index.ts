@@ -9,6 +9,8 @@ import { Prisma } from '@prisma/client'
 export interface User {
     id: string
     name?: string | null
+    bio?: string | null
+    websiteUrl?: string | null
     email?: string | null
     image?: string | null
     passwordHash?: string | null

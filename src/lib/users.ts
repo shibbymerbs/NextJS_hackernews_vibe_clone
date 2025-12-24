@@ -13,6 +13,8 @@ export async function getUserById(id: string): Promise<User | null> {
             select: {
                 id: true,
                 name: true,
+                bio: true,
+                websiteUrl: true,
                 createdAt: true,
                 updatedAt: true
             }
