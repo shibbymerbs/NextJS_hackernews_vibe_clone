@@ -1,11 +1,10 @@
 'use server';
 
 import { revalidatePath } from 'next/cache';
-import { redirect, RedirectType } from 'next/navigation';
 import { getSession } from '@/lib/auth-server';
 import prisma from '@/lib/db';
 
-export async function updateUserProfile(formData: FormData): Promise<void> {
+export async function updateUserProfile(formData: FormData): Promise<{ success: boolean; message?: string }> {
     const session = await getSession();
     const userId = formData.get('userId') as string;
     const bio = formData.get('bio') as string;
@@ -13,7 +12,7 @@ export async function updateUserProfile(formData: FormData): Promise<void> {
 
     // Verify the user is authenticated and owns this profile
     if (!session?.user || session.user.id !== userId) {
-        throw new Error('Unauthorized');
+        return { success: false, message: 'Unauthorized' };
     }
 
     try {
@@ -28,10 +27,9 @@ export async function updateUserProfile(formData: FormData): Promise<void> {
         // Revalidate the cache for this user's page
         revalidatePath(`/user/${userId}`);
 
-        // Redirect back to the user's profile with a success message
-        redirect(`/user/${userId}?message=profile_updated`, RedirectType.replace);
+        return { success: true, message: 'Profile updated successfully' };
     } catch (error) {
         console.error('Error updating profile:', error);
-        throw new Error('Failed to update profile');
+        return { success: false, message: 'Failed to update profile' };
     }
 }
