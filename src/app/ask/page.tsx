@@ -1,9 +1,16 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import prisma from '@/lib/db'
+import { auth } from '@/auth'
+import { useSession } from 'next-auth/react'
 
 async function createStory(formData: FormData) {
   'use server'
+
+  const { data: session, status } = useSession()
+  if (!session?.user?.id) {
+    throw new Error('Unauthorized - Please login to post')
+  }
 
   const title = formData.get('title') as string
   const text = formData.get('text') as string
@@ -20,7 +27,7 @@ async function createStory(formData: FormData) {
         text,
         // For ask page, we don't have a URL, so it's a text-based story
         url: null,
-        userId: null // No user association for anonymous questions
+        userId: session.user.id.toString()
       }
     })
 

@@ -9,14 +9,25 @@ import {
   getStoriesByFreshness
 } from '@/lib/stories'
 import { sortStoriesByFreshness, sortCommentsByFreshness } from '@/lib/freshness'
+import { auth } from '@/auth'
 
 export async function POST(request: Request) {
   try {
-    const { storyId, commentId, action, userId } = await request.json()
+    const session = await auth()
+    const body = await request.json()
 
-    if ((!storyId && !commentId) || !action || !userId) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    // Get user ID from session
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login to vote' },
+        { status: 401 }
+      )
     }
+
+    const userId = String(session.user.id)
+    const storyId = body.storyId
+    const commentId = body.commentId
+    const action = body.action
 
     if (storyId) {
       // Handle story voting
@@ -51,10 +62,21 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   try {
+    const session = await auth()
     const { searchParams } = new URL(request.url)
     const sortType = searchParams.get('sort')
 
-    // Handle freshness sorting requests
+    // Get user ID from session for vote lookup
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login to check votes' },
+        { status: 401 }
+      )
+    }
+
+    const userId = String(session.user.id)
+
+    // Handle freshness sorting requests (public)
     if (sortType === 'freshness') {
       const stories = await getStoriesByFreshness()
       return NextResponse.json(stories)
@@ -63,10 +85,9 @@ export async function GET(request: Request) {
     // Handle vote lookup requests
     const storyId = searchParams.get('storyId')
     const commentId = searchParams.get('commentId')
-    const userId = searchParams.get('userId')
 
-    if ((!storyId && !commentId) || !userId) {
-      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 })
+    if (!storyId && !commentId) {
+      return NextResponse.json({ error: 'Either storyId or commentId must be provided' }, { status: 400 })
     }
 
     if (storyId) {
@@ -77,8 +98,6 @@ export async function GET(request: Request) {
       // Handle comment vote lookup
       const vote = await getUserCommentVote(commentId, userId)
       return NextResponse.json({ vote: vote?.type || null })
-    } else {
-      return NextResponse.json({ error: 'Either storyId or commentId must be provided' }, { status: 400 })
     }
   } catch (error) {
     console.error('Error handling vote request:', error)

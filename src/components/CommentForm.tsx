@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function CommentForm({ storyId, showHnId, parentId }: { storyId?: string; showHnId?: string; parentId?: string }) {
   const [commentText, setCommentText] = useState('')
@@ -9,6 +10,7 @@ export default function CommentForm({ storyId, showHnId, parentId }: { storyId?:
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,12 +30,18 @@ export default function CommentForm({ storyId, showHnId, parentId }: { storyId?:
           showHnId,
           parentId,
           text: commentText,
-          userId: null // Allow null userId for anonymous comments
+          userId: session?.user?.id || null
         }),
       })
 
       if (!response.ok) {
-        throw new Error('Failed to submit comment')
+        const data = await response.json()
+        if (data.error && data.error.includes('login')) {
+          setError(data.error)
+        } else {
+          throw new Error('Failed to submit comment')
+        }
+        return
       }
 
       // Reset form and show success
@@ -64,7 +72,15 @@ export default function CommentForm({ storyId, showHnId, parentId }: { storyId?:
           disabled={isSubmitting}
         />
       </div>
-      {error && <p className="text-red-500 text-sm">{error}</p>}
+      {error && (
+        <p className="text-red-500 text-sm">
+          {error.includes('login') ? (
+            <>
+              {error} <a href="/login" className="underline">Login</a> to comment.
+            </>
+          ) : error}
+        </p>
+      )}
       {success && <p className="text-green-500 text-sm">Comment submitted successfully!</p>}
       <button
         type="submit"

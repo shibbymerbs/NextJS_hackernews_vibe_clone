@@ -1,22 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { auth } from '@/auth'
 
 interface ShowHNVoteButtonsProps {
     showhnId: string
     initialPoints: number
     className?: string
-    userId?: string | null
 }
 
-export default function ShowHNVoteButtons({ showhnId, initialPoints, className = '', userId = null }: ShowHNVoteButtonsProps) {
+export default function ShowHNVoteButtons({ showhnId, initialPoints, className = '' }: ShowHNVoteButtonsProps) {
+    const { data: session, status } = useSession()
     const [points, setPoints] = useState(initialPoints)
     const [userVote, setUserVote] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(true)
 
+    // Get user ID from session - voting requires login
+    const effectiveUserId = session?.user?.id
+
     useEffect(() => {
-        // Use demo user for testing if no userId is provided
-        const effectiveUserId = userId || 'demo-user-123'
         const fetchUserVote = async (effectiveUserId: string) => {
             try {
                 const response = await fetch(`/api/showhns?showhnId=${showhnId}&userId=${effectiveUserId}`)
@@ -31,12 +34,12 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
             }
         }
 
-        fetchUserVote(effectiveUserId)
-    }, [userId])
+        if (effectiveUserId) {
+            fetchUserVote(effectiveUserId)
+        }
+    }, [showhnId, effectiveUserId])
 
     const handleVote = async (voteType: 'upvote' | 'downvote') => {
-        // Use a default user ID for testing purposes
-        const effectiveUserId = userId || 'demo-user-123'
 
         try {
             const response = await fetch('/api/showhns', {
@@ -47,7 +50,7 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
                 body: JSON.stringify({
                     showhnId,
                     type: voteType,
-                    userId: effectiveUserId
+                    userId: effectiveUserId!
                 }),
             })
 
@@ -91,24 +94,39 @@ export default function ShowHNVoteButtons({ showhnId, initialPoints, className =
         )
     }
 
+    // Disable voting if not logged in
+    const isLoggedIn = !!effectiveUserId
+
     return (
         <div className={`flex items-center space-x-2 ${className}`}>
             <span className="text-hn-dark-gray text-sm">{points} points</span>
             <div className="flex flex-col space-y-1">
-                <button
-                    className={`vote-button ${userVote === 'upvote' ? 'active' : ''}`}
-                    onClick={() => handleVote('upvote')}
-                    disabled={false}
-                >
-                    ▲
-                </button>
-                <button
-                    className={`vote-button ${userVote === 'downvote' ? 'active' : ''}`}
-                    onClick={() => handleVote('downvote')}
-                    disabled={false}
-                >
-                    ▼
-                </button>
+                {!isLoggedIn ? (
+                    <button className="vote-button disabled" disabled title="Please login to vote">
+                        ▲
+                    </button>
+                ) : (
+                    <button
+                        className={`vote-button ${userVote === 'upvote' ? 'active' : ''}`}
+                        onClick={() => handleVote('upvote')}
+                        disabled={!isLoggedIn}
+                    >
+                        ▲
+                    </button>
+                )}
+                {!isLoggedIn ? (
+                    <button className="vote-button disabled" disabled title="Please login to vote">
+                        ▼
+                    </button>
+                ) : (
+                    <button
+                        className={`vote-button ${userVote === 'downvote' ? 'active' : ''}`}
+                        onClick={() => handleVote('downvote')}
+                        disabled={!isLoggedIn}
+                    >
+                        ▼
+                    </button>
+                )}
             </div>
         </div>
     )

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getAllStories, getStoriesByFreshness } from '@/lib/stories'
 import prisma from '@/lib/db'
+import { auth } from '@/auth'
 
 export async function GET(request: Request) {
   try {
@@ -25,8 +26,19 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await auth()
     const body = await request.json()
-    const { title, text, url, userId } = body
+    const { title, text, url } = body
+
+    // Require authentication for posting stories
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login to post a story' },
+        { status: 401 }
+      )
+    }
+
+    const userId = String(session.user.id)
 
     if (!title) {
       return NextResponse.json(

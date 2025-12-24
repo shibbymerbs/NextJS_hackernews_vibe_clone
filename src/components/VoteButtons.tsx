@@ -1,25 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 
 interface VoteButtonsProps {
   storyId: string
   initialPoints: number
   className?: string
-  userId?: string | null
 }
 
-export default function VoteButtons({ storyId, initialPoints, className = '', userId = null }: VoteButtonsProps) {
+export default function VoteButtons({ storyId, initialPoints, className = '' }: VoteButtonsProps) {
+  const { data: session, status } = useSession()
   const [points, setPoints] = useState(initialPoints)
   const [userVote, setUserVote] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
+  // Get user ID from session or use demo user for testing
+  const effectiveUserId = session?.user?.id || 'demo-user-123'
+
   useEffect(() => {
-    // Use demo user for testing if no userId is provided
-    const effectiveUserId = userId || 'demo-user-123'
-    const fetchUserVote = async (effectiveUserId: string) => {
+    const fetchUserVote = async () => {
       try {
-        const response = await fetch(`/api/votes?storyId=${storyId}&userId=${effectiveUserId}`)
+        const response = await fetch(`/api/votes?storyId=${storyId}`)
         const data = await response.json()
         if (data.vote) {
           setUserVote(data.vote)
@@ -31,13 +33,12 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
       }
     }
 
-    fetchUserVote(effectiveUserId)
-  }, [userId])
+    fetchUserVote()
+  }, [effectiveUserId, storyId, status])
 
 
   const handleVote = async (voteType: 'upvote' | 'downvote') => {
-    // Use a default user ID for testing purposes
-    const effectiveUserId = userId || 'demo-user-123'
+    if (!effectiveUserId) return
 
     try {
       const response = await fetch('/api/votes', {
@@ -47,8 +48,7 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
         },
         body: JSON.stringify({
           storyId,
-          action: voteType,
-          userId: effectiveUserId
+          action: voteType
         }),
       })
 
@@ -87,6 +87,7 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
     }
   }
 
+
   if (isLoading) {
     return (
       <div className={`flex items-center space-x-2 ${className}`}>
@@ -99,25 +100,42 @@ export default function VoteButtons({ storyId, initialPoints, className = '', us
     )
   }
 
+  // Disable voting if not logged in or loading
+  const isLoggedIn = status === 'authenticated' && !!effectiveUserId
+
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-
       <div className="flex flex-col space-y-1">
-        <button
-          className={`vote-button ${userVote === 'upvote' ? 'active' : ''}`}
-          onClick={() => handleVote('upvote')}
-          disabled={false}
-        >
-          ▲
-        </button>
-        <button
-          className={`vote-button ${userVote === 'downvote' ? 'active' : ''}`}
-          onClick={() => handleVote('downvote')}
-          disabled={false}
-        >
-          ▼
-        </button>
-
+        {status === 'unauthenticated' ? (
+          <button className="vote-button disabled" disabled title="Please login to vote">
+            ▲
+          </button>
+        ) : status === 'loading' ? (
+          <button className="vote-button disabled" disabled>▲</button>
+        ) : (
+          <button
+            onClick={() => handleVote('upvote')}
+            className={`vote-button ${userVote === 'upvote' ? 'active' : ''}`}
+            disabled={!isLoggedIn}
+          >
+            ▲
+          </button>
+        )}
+        {status === 'unauthenticated' ? (
+          <button className="vote-button disabled" disabled title="Please login to vote">
+            ▼
+          </button>
+        ) : status === 'loading' ? (
+          <button className="vote-button disabled" disabled>▼</button>
+        ) : (
+          <button
+            onClick={() => handleVote('downvote')}
+            className={`vote-button ${userVote === 'downvote' ? 'active' : ''}`}
+            disabled={!isLoggedIn}
+          >
+            ▼
+          </button>
+        )}
       </div>
       <span className="text-hn-dark-gray text-sm">{points} points</span>
     </div>

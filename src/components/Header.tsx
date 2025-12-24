@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { auth } from '@/auth'
 
 export default async function Header() {
-    const session = await auth();
+    const session = await auth()
     return (
         <header className="flex justify-between items-center mb-8">
             <h1 className="text-2xl font-bold text-hn-orange">

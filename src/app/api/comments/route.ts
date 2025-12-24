@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createComment, getCommentsByStoryId } from '@/lib/stories'
+import { auth } from '@/auth'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -20,7 +21,19 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { storyId, showHnId, text, parentId, userId } = await request.json()
+    const session = await auth()
+    const body = await request.json()
+
+    // Require authentication for posting comments
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please login to post a comment' },
+        { status: 401 }
+      )
+    }
+
+    const userId = String(session.user.id)
+    const { storyId, showHnId, text, parentId } = body
 
     if (!text) {
       return NextResponse.json({ error: 'text is required' }, { status: 400 })
