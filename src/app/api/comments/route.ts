@@ -51,7 +51,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Either storyId or showHnId is required' }, { status: 400 })
     }
 
-    const comment = await createComment(storyId, showHnId, userId || null, text, parentId)
+    // When replying (parentId provided), only pass parentId and let createComment
+    // inherit the storyId/showHnId from the parent comment
+    const comment = await createComment(
+      parentId ? undefined : storyId,
+      parentId ? undefined : showHnId,
+      userId || null,
+      text,
+      parentId
+    )
 
     if (!comment) {
       return NextResponse.json({ error: 'Failed to create comment - validation failed' }, { status: 400 })

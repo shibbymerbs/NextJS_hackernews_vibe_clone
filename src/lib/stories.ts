@@ -20,12 +20,7 @@ export async function createStory(userId: string | null, title: string, url: str
     }
 
     if (!user && userId) {
-      user = await prisma.user.create({
-        data: {
-          id: userId,
-          name: 'Demo User'
-        }
-      })
+      throw new Error('User not found')
     }
 
     const story = await prisma.story.create({
@@ -47,27 +42,112 @@ export async function createStory(userId: string | null, title: string, url: str
   }
 }
 
+/**
+ * Recursively fetch all children comments for a given parent comment
+ * @param parentId - The parent comment ID to fetch children for
+ * @returns Array of child comments with their own children recursively loaded
+ */
+async function getCommentChildrenRecursive(parentId: string | null): Promise<Comment[]> {
+  if (!parentId) {
+    return []
+  }
+
+  const children = await prisma.comment.findMany({
+    where: { parentId },
+    include: {
+      user: true,
+      _count: {
+        select: { children: true }
+      }
+    },
+    orderBy: [
+      {
+        points: 'desc'
+      },
+      {
+        createdAt: 'asc'
+      }
+    ]
+  })
+
+  // Recursively load grandchildren for each child
+  const childrenWithGrandchildren = await Promise.all(
+    children.map(async (child) => {
+      const grandchildren = await getCommentChildrenRecursive(child.id)
+      return {
+        ...child,
+        children: grandchildren.length > 0 ? grandchildren : undefined
+      }
+    })
+  )
+
+  return childrenWithGrandchildren
+}
+
+/**
+ * Get all comments for a story with infinite nesting support
+ * @param storyId - The story ID to fetch comments for
+ * @returns Array of top-level comments with recursively loaded children
+ */
+async function getCommentsForStoryRecursive(storyId: string): Promise<Comment[]> {
+  const topLevelComments = await prisma.comment.findMany({
+    where: {
+      storyId,
+      parentId: null // Only top-level comments
+    },
+    include: {
+      user: true,
+      _count: {
+        select: { children: true }
+      }
+    },
+    orderBy: [
+      {
+        points: 'desc'
+      },
+      {
+        createdAt: 'asc'
+      }
+    ]
+  })
+
+  // Recursively load children for each top-level comment
+  const commentsWithChildren = await Promise.all(
+    topLevelComments.map(async (comment) => {
+      const children = await getCommentChildrenRecursive(comment.id)
+      return {
+        ...comment,
+        children: children.length > 0 ? children : undefined
+      }
+    })
+  )
+
+  return commentsWithChildren
+}
+
 export async function getStoryById(id: string): Promise<StoryWithComments | null> {
   try {
     const story = await prisma.story.findUnique({
       where: { id },
       include: {
         user: true,
-        comments: {
-          include: {
-            user: true,
-            children: {
-              include: {
-                user: true,
-                children: true
-              }
-            }
-          }
+        _count: {
+          select: { comments: true }
         }
       }
     })
 
-    return story
+    if (!story) {
+      return null
+    }
+
+    // Fetch comments recursively with infinite nesting
+    const comments = await getCommentsForStoryRecursive(id)
+
+    return {
+      ...story,
+      comments: comments.length > 0 ? comments : undefined
+    }
   } catch (error) {
     console.error('Error fetching story:', error)
     return null
@@ -130,7 +210,7 @@ export async function createComment(storyId: string | null, showHnId: string | n
         return null
       }
 
-      // Inherit from parent
+      // Inherit from parent - ignore the storyId/showHnId parameters when parentId is provided
       storyId = parentComment.storyId || null
       showHnId = parentComment.showHnId || null
 
@@ -140,26 +220,22 @@ export async function createComment(storyId: string | null, showHnId: string | n
       }
     }
 
-    // Check if parent comment exists (if parentId is provided)
-    let parentComment = null
-    if (parentId) {
-      parentComment = await prisma.comment.findUnique({
-        where: { id: parentId }
-      })
-      if (!parentComment) {
-        console.error(`Parent comment with ID ${parentId} not found`)
-        return null
-      }
+    // Set the post reference that exists (story or showHN)
+    const commentData: any = {
+      userId,
+      text,
+      parentId
+    }
+
+    // At least one of storyId or showHnId must be set for the foreign key constraint
+    if (storyId) {
+      commentData.storyId = storyId
+    } else if (showHnId) {
+      commentData.showHnId = showHnId
     }
 
     const comment = await prisma.comment.create({
-      data: {
-        storyId,
-        showHnId,
-        userId,
-        text,
-        parentId
-      },
+      data: commentData,
       include: {
         user: true
       }

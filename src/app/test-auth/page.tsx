@@ -15,7 +15,12 @@ export default async function TestAuthPage() {
                     <p>Email: {session.user.email}</p>
                 </div>
             ) : (
-                <p>Not logged in</p>
+                <div className="mt-4">
+                    <p>Not logged in</p>
+                    <Link href="/login" className="text-blue-600 hover:underline">
+                        Login
+                    </Link>
+                </div>
             )}
 
             <div className="mt-4">
@@ -24,11 +29,7 @@ export default async function TestAuthPage() {
                 </Link>
             </div>
 
-            <div className="mt-4">
-                <Link href="/login" className="text-blue-600 hover:underline">
-                    Login
-                </Link>
-            </div>
+
         </div>
     )
 }
