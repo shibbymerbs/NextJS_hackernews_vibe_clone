@@ -8,11 +8,17 @@ A full-featured Hacker News clone built with Next.js 14, TypeScript, Tailwind CS
 - ✅ TypeScript support
 - ✅ Tailwind CSS styling
 - ✅ SQLite database with Prisma ORM
-- ✅ User authentication system
+- ✅ User authentication system with GitHub OAuth
 - ✅ Story listing and detail views
 - ✅ Comment functionality with nested replies
+- ✅ Upvote/downvote system for stories and comments
+- ✅ Freshness-based sorting algorithm
+- ✅ Ask HN page for submitting new posts
+- ✅ Show HN page for filtering submissions
+- ✅ User profile pages
 - ✅ Responsive design
 - ✅ API routes for data access
+- ✅ Comprehensive Jest test suite
 
 ## Getting Started
 
@@ -111,13 +117,11 @@ Create a `.env` file in the root directory:
 # Database configuration (SQLite)
 DATABASE_URL="file:./dev.db"
 
-# Authentication (for future implementation)
+# Authentication
 NEXTAUTH_SECRET=your-secret-key
 NEXTAUTH_URL=http://localhost:3000
 GITHUB_ID=your-github-id
 GITHUB_SECRET=your-github-secret
-GOOGLE_ID=your-google-id
-GOOGLE_SECRET=your-google-secret
 ```
 
 ## Deployment
@@ -150,10 +154,12 @@ npm run test:coverage
 The test suite includes the following coverage:
 
 - **File Existence Tests**: Verifies critical application files are present
-- **API Endpoint Tests**: Tests for stories, comments, and freshness endpoints
+- **API Endpoint Tests**: Tests for stories, comments, freshness endpoints, and votes
 - **Database Setup Tests**: Validates database migrations and schema
 - **Freshness Algorithm Tests**: Ensures proper story ranking calculations
 - **Comment Creation Tests**: Validates comment submission functionality
+- **Authentication Tests**: Tests for OAuth integration and session management
+- **Nested Comments Tests**: Validates recursive comment rendering
 
 ### Test Structure
 
@@ -161,13 +167,47 @@ Tests are organized in the `__tests__` directory:
 
 ```
 __tests__
-├── ask.test.ts          # File existence checks
-├── comment-creation.test.ts  # API endpoint tests
-├── freshness.test.ts    # Freshness algorithm tests
-├── setup.test.ts        # Database setup and migration tests
-└── verify.test.ts       # Schema verification tests
+├── ask.test.ts                     # File existence checks
+├── auth-protection.test.ts          # Authentication protection tests
+├── auth-with-cookie.test.ts         # Cookie-based authentication tests
+├── comment-creation.test.ts         # API endpoint tests for comments
+├── cookie-auth-final.test.ts        # Final cookie authentication tests
+├── cookie-auth-simple.test.ts       # Simple cookie authentication tests
+├── cookie-auth.test.ts              # Cookie authentication tests
+├── freshness.test.ts                # Freshness algorithm tests
+├── nested-comments-e2e.test.ts      # End-to-end nested comments tests
+├── nested-comments-ui.test.ts       # UI rendering tests for nested comments
+├── nested-comments.test.ts          # Unit tests for nested comments
+├── setup.test.ts                    # Database setup and migration tests
+└── verify.test.ts                   # Schema verification tests
 ```
 
 ## License
 
 MIT
+
+## Changelog
+
+### Recent Updates
+
+- **User Profile Pages**: Added user profile pages to view user information and activity
+- **GitHub OAuth**: Implemented GitHub OAuth authentication for user login
+- **Nested Comments**: Added support for recursive nested comment threads with visual depth indicators
+- **Voting System**: Implemented upvote/downvote functionality for both stories and comments
+- **Freshness Sorting**: Added algorithm to sort stories by freshness (time + score)
+- **Ask HN Page**: Created a dedicated page for submitting new posts
+- **Show HN Page**: Added filtering capability to show only submissions
+- **Jest Testing**: Migrated from custom test scripts to comprehensive Jest test suite
+- **TypeScript Improvements**: Strongly typed API routes and utility functions
+- **Header Component**: Refactored navigation into a reusable Header component
+
+### Database Schema Updates
+
+The database schema has evolved with the following migrations:
+
+1. Initial setup with User, Story, and Comment models
+2. Added Votes model for tracking user votes
+3. Extended Votes to support comments
+4. Added ShowHN model for filtering submissions
+5. Updated Comment relations for proper nesting
+6. Added Auth-related models (Session, Account, VerificationToken)
