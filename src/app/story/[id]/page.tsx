@@ -33,26 +33,25 @@ export default async function StoryPage({
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
     if (seconds < 60) return `${seconds} seconds ago`
-    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`
-    return `${Math.floor(seconds / 86400)} days ago`
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minute${Math.floor(seconds / 60) === 1 ? '' : 's'} ago`
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hour${Math.floor(seconds / 3600) === 1 ? '' : 's'} ago`
+    return `${Math.floor(seconds / 86400)} day${Math.floor(seconds / 86400) === 1 ? '' : 's'} ago`
   }
 
   // Render comments recursively
   const renderComments = (comments: Comment[], depth = 0): JSX.Element[] => {
     return comments.map(comment => (
-      <div key={comment.id} className={`ml-${depth * 4} mt-4 pt-2 border-l border-hn-light-gray pl-4`}>
+      <div key={comment.id} className={`ml-${depth} mt-4 pt-2 border-l-2 pl-3 ${getCommentDepthClass(depth)}`}>
         <div className="flex items-start space-x-2">
           <CommentVoteButtons
             commentId={comment.id}
             initialPoints={comment.points}
-            userId={null}
           />
           <div className="flex-1">
 
             <div className="flex items-center space-x-2 mb-1">
               <span className="text-sm font-medium text-hn-dark-gray">{comment.user?.name || 'anonymous'}</span>
-              <span className="text-sm text-hn-light-gray">{timeAgo(new Date(comment.createdAt))}</span>
+              <span className="text-sm text-hn-light-gray" title={new Date(comment.createdAt).toDateString() + ' ' + new Date(comment.createdAt).toLocaleTimeString()} >{timeAgo(new Date(comment.createdAt))}</span>
 
             </div>
             <p className="text-base text-hn-darkest-gray whitespace-pre-wrap">{comment.text}</p>
@@ -62,6 +61,27 @@ export default async function StoryPage({
         </div>
       </div>
     ))
+  }
+
+  // Get color class based on comment depth for left border
+  const getCommentDepthClass = (depth: number): string => {
+    if (depth === 0) return 'border-l-transparent';
+
+    // Color palette for nested comments - cycles through these colors
+    const colors = [
+      'blue-200',
+      'green-200',
+      'purple-200',
+      'pink-200',
+      'orange-200',
+      'yellow-200',
+      'teal-200',
+      'indigo-200'
+    ];
+
+    // Cycle through colors for deeper nesting
+    const colorIndex = (depth - 1) % colors.length;
+    return `border-l-${colors[colorIndex]}`;
   }
 
   if (!story) {
@@ -85,7 +105,6 @@ export default async function StoryPage({
             <VoteButtons
               storyId={story.id}
               initialPoints={story.points}
-              userId={null} // For now, we'll use null userId
             />
             <span>by <Link href={`/user/${story.userId}`} className="hn-link font-medium">{story.user?.name || 'anonymous'}</Link></span>
             <span>{timeAgo(new Date(story.createdAt))}</span>
@@ -103,7 +122,7 @@ export default async function StoryPage({
         </div>
 
         <section className="mt-8 pt-4 border-t border-hn-light-gray">
-          <h2 className="text-lg font-semibold text-hn-darkest-gray mb-4">{story.comments?.length || 0} Comments</h2>
+          <h2 className="text-lg font-semibold text-hn-darkest-gray mb-4">{story._count?.comments || 0} Comments</h2>
           {story.comments && story.comments.length > 0 ? (
             <div className="space-y-4">
               {renderComments(story.comments)}

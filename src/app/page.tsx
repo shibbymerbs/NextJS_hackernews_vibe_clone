@@ -20,7 +20,6 @@ export default async function Home() {
                   <VoteButtons
                     storyId={story.id}
                     initialPoints={story.points}
-                    userId={null} // For now, we'll use null userId
                   />
                   <p className="text-sm text-hn-dark-gray">
                     by <Link href={`/user/${story.userId}`} className="hn-link">{story.user?.name || 'anonymous'}</Link> | <Link href={`/story/${story.id}`} className="hn-link">{story._count?.comments || 0} comments</Link>

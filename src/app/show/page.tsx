@@ -35,7 +35,7 @@ export default async function ShowPage() {
                                 </h2>
                                 <div className="flex items-center space-x-4">
                                     <p className="text-sm text-hn-dark-gray">
-                                        {post.points} points | <Link href={`/show/${post.id}`} className="hn-link">{post._count?.comments || 0} comments</Link>
+                                        {post.points} | <Link href={`/show/${post.id}`} className="hn-link">{post._count?.comments || 0} comments</Link>
                                     </p>
                                 </div>
                             </div>
