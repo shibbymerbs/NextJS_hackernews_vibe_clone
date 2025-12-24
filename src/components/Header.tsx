@@ -15,9 +15,9 @@ export default async function Header() {
                 <Link href="/jobs" className="hn-link">jobs</Link>
                 {session?.user ? (
                     <div className="flex items-center space-x-2">
-                        <span className="text-sm text-gray-600">
+                        <a href={'/user/' + session.user.id} className="link hn-link font-medium">
                             {(session.user as any).name || (session.user as any).email}
-                        </span>
+                        </a>
                         <Link
                             href="/api/auth/signout"
                             className="hn-link text-red-500 hover:text-red-700"

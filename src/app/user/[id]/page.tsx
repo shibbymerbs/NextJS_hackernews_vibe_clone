@@ -76,11 +76,11 @@ export default async function UserPage({
     function CommentItem({ comment }: { comment: any }) {
         return (
             <div className={`ml-${comment.depth ? comment.depth * 2 : 0} pl-4`}>
+                <p className="whitespace-pre-line border-l-2 border-hn-light-gray pl-2">{comment.text}</p>
+                <span className="text-sm text-hn-light-gray">in <Link href={`/story/${comment.storyId}`} className="hn-link">{comment.story?.title || 'story'}</Link></span>
                 <div className="flex items-center space-x-2 mb-1">
                     <span className="text-sm text-hn-light-gray" title={new Date(comment.createdAt).toDateString() + ' ' + new Date(comment.createdAt).toLocaleTimeString()} >{timeAgo(new Date(comment.createdAt))}</span>
                 </div>
-                <p className="whitespace-pre-line">{comment.text}</p>
-                <span className="text-sm text-hn-light-gray">in <Link href={`/story/${comment.storyId}`} className="hn-link">{comment.story?.title || 'story'}</Link></span>
             </div>
         );
     }
